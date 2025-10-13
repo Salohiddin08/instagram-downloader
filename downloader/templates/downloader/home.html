@@ -1,0 +1,106 @@
+{% extends 'downloader/base.html' %}
+
+{% block title %}Instagram Video Downloader - Home{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <h1 class="display-4 text-gradient">
+                        <i class="fab fa-instagram text-danger"></i> Instagram Downloader
+                    </h1>
+                    <p class="lead text-muted">Download Instagram posts, reels, stories, and IGTV videos</p>
+                </div>
+
+                <form method="post" id="downloadForm">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-9">
+                            {{ form.url }}
+                            {% if form.url.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.url.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-instagram w-100 text-white">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6><i class="fas fa-info-circle"></i> How to use:</h6>
+                    <ol class="mb-0 small">
+                        <li>Copy the Instagram post/reel URL from your browser or app</li>
+                        <li>Paste the URL in the input field above</li>
+                        <li>Click Download and wait for the process to complete</li>
+                        <li>Download your video when ready</li>
+                    </ol>
+                </div>
+
+                <div class="mt-4 p-3 border-start border-warning border-4 bg-warning bg-opacity-10">
+                    <h6 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Supported URLs:</h6>
+                    <ul class="mb-0 small">
+                        <li>Instagram Posts: <code>https://www.instagram.com/p/...</code></li>
+                        <li>Instagram Reels: <code>https://www.instagram.com/reel/...</code></li>
+                        <li>Instagram Stories: <code>https://www.instagram.com/stories/...</code></li>
+                        <li>IGTV Videos: <code>https://www.instagram.com/tv/...</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recent_downloads %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Downloads</h5>
+            </div>
+            <div class="card-body p-0">
+                {% for download in recent_downloads %}
+                <div class="d-flex align-items-center p-3 border-bottom">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ download.title|default:"Loading..." }}</h6>
+                        <small class="text-muted">{{ download.url|truncatechars:60 }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge status-{{ download.status }} fs-6">
+                            {% if download.status == 'pending' %}
+                                <i class="fas fa-clock"></i> Pending
+                            {% elif download.status == 'downloading' %}
+                                <i class="fas fa-download"></i> Downloading
+                            {% elif download.status == 'completed' %}
+                                <i class="fas fa-check"></i> Completed
+                            {% else %}
+                                <i class="fas fa-times"></i> Failed
+                            {% endif %}
+                        </span>
+                        {% if download.status == 'completed' %}
+                            <a href="{% url 'download_file' download.pk %}" class="btn btn-sm btn-outline-success ms-2">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="p-3 text-center">
+                    <a href="{% url 'download_list' %}" class="btn btn-outline-primary">
+                        View All Downloads <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

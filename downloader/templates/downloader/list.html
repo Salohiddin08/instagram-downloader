@@ -1,0 +1,172 @@
+{% extends 'downloader/base.html' %}
+
+{% block title %}All Downloads - Instagram Video Downloader{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="fas fa-list"></i> All Downloads</h3>
+                <a href="{% url 'home' %}" class="btn btn-instagram text-white">
+                    <i class="fas fa-plus"></i> New Download
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if downloads %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>URL</th>
+                                    <th>Status</th>
+                                    <th>Started</th>
+                                    <th>Completed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for download in downloads %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>{{ download.title|default:"Processing..." }}</strong>
+                                            {% if download.filename %}
+                                                <br><small class="text-muted">{{ download.filename }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ download.url }}" target="_blank" class="text-decoration-none">
+                                            {{ download.url|truncatechars:50 }}
+                                            <i class="fas fa-external-link-alt text-muted small"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge status-{{ download.status }}">
+                                            {% if download.status == 'pending' %}
+                                                <i class="fas fa-clock"></i> Pending
+                                            {% elif download.status == 'downloading' %}
+                                                <i class="fas fa-spinner fa-spin"></i> Downloading
+                                            {% elif download.status == 'completed' %}
+                                                <i class="fas fa-check"></i> Completed
+                                            {% else %}
+                                                <i class="fas fa-times"></i> Failed
+                                            {% endif %}
+                                        </span>
+                                        {% if download.error_message %}
+                                            <i class="fas fa-exclamation-triangle text-warning" 
+                                               title="{{ download.error_message }}" 
+                                               data-bs-toggle="tooltip"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ download.created_at|date:"M d, Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if download.completed_at %}
+                                            <small>{{ download.completed_at|date:"M d, Y H:i" }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if download.status == 'completed' %}
+                                                <a href="{% url 'download_file' download.pk %}" 
+                                                   class="btn btn-sm btn-outline-success" 
+                                                   title="Download File">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            {% endif %}
+                                            <a href="{% url 'download_status' download.pk %}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="View Status">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center p-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No downloads yet</h4>
+                        <p class="text-muted">Start by downloading your first Instagram video!</p>
+                        <a href="{% url 'home' %}" class="btn btn-instagram text-white">
+                            <i class="fas fa-download"></i> Start Downloading
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if downloads %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="fas fa-chart-bar"></i> Download Statistics</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-primary">{{ downloads|length }}</h3>
+                            <small class="text-muted">Total Downloads</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-success">{{ downloads|length }}</h3>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-info">0</h3>
+                            <small class="text-muted">In Progress</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-danger">0</h3>
+                        <small class="text-muted">Failed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // Auto-refresh for active downloads
+    let hasActiveDownloads = false;
+    $('tbody tr').each(function() {
+        let status = $(this).find('.badge').text().trim().toLowerCase();
+        if (status.includes('pending') || status.includes('downloading')) {
+            hasActiveDownloads = true;
+        }
+    });
+    
+    if (hasActiveDownloads) {
+        setInterval(function() {
+            location.reload();
+        }, 10000); // Refresh every 10 seconds
+    }
+});
+</script>
+{% endblock %}
