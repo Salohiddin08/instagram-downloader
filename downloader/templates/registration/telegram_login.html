@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login with Telegram - Instagram Downloader</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .telegram-color {
+            background-color: #0088cc;
+            border-color: #0088cc;
+        }
+        .telegram-color:hover {
+            background-color: #0077bb;
+            border-color: #0077bb;
+        }
+    </style>
+</head>
+<body class="custom-bg min-vh-100 d-flex align-items-center justify-content-center">
+    <section class="vh-100">
+        <div class="container h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-lg-12 col-xl-11">
+                    <div class="card text-black" style="border-radius: 25px;">
+                        <div class="card-body p-md-5">
+                            <div class="row justify-content-center">
+                                <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+                                    <p class="text-center h1 fw-bold mb-3 mx-1 mx-md-4 mt-4">
+                                        <i class="fab fa-telegram text-info"></i> Login with Telegram
+                                    </p>
+                                    
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Super Easy! Just 2 steps to get started:</strong>
+                                        <ol class="mb-0 mt-2">
+                                            <li><strong>First time?</strong> Chat with our bot: <a href="https://t.me/social_downloader_site_bot" target="_blank" class="text-decoration-none">@social_downloader_site_bot</a></li>
+                                            <li>Send <code>/start</code> and click <strong>"📞 Share My Phone Number"</strong></li>
+                                            <li>Then enter your phone number below and get your OTP!</li>
+                                        </ol>
+                                        <div class="mt-2">
+                                            <small><i class="fas fa-shield-alt"></i> Your phone number is only used for secure login verification.</small>
+                                        </div>
+                                    </div>
+
+                                    <form class="mx-1 mx-md-4" method="post" action="">
+                                        {% csrf_token %}
+
+                                        <!-- Display form errors -->
+                                        {% if messages %}
+                                            {% for message in messages %}
+                                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                                {{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                            </div>
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        <!-- Phone Number Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-phone fa-lg me-3 text-info"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                <label class="form-label" for="phone_number">Your Phone Number</label>
+                                                <input type="tel" 
+                                                       id="phone_number" 
+                                                       name="phone_number"
+                                                       class="form-control"
+                                                       placeholder="e.g., +1234567890"
+                                                       required>
+                                                <div class="form-text">Enter your phone number with country code (e.g., +1, +44, +91)</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Submit Button -->
+                                        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                                            <button type="submit" class="btn telegram-color text-white btn-lg">
+                                                <i class="fas fa-paper-plane me-2"></i>
+                                                Send OTP Code
+                                            </button>
+                                        </div>
+                                    </form>
+                                    
+                                    <div class="text-center">
+                                        <p>Want to use traditional login?</p>
+                                        <a href="{% url 'login' %}" class="btn btn-outline-primary">
+                                            <i class="fas fa-user me-2"></i>Username & Password
+                                        </a>
+                                        <a href="{% url 'signup' %}" class="btn btn-link">Sign Up</a>
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
+                                    <div class="text-center">
+                                        <i class="fab fa-telegram display-1 text-info mb-4"></i>
+                                        <h3 class="text-primary">Secure Telegram Login</h3>
+                                        <p class="text-muted">Login quickly and securely using your Telegram account. We'll send a verification code directly to your Telegram.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Instagram Downloader</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255,);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="custom-bg min-vh-100 d-flex align-items-center justify-content-center">
+    <section class="vh-100">
+        <div class="container h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-lg-12 col-xl-11">
+                    <div class="card text-black" style="border-radius: 25px;">
+                        <div class="card-body p-md-5">
+                            <div class="row justify-content-center">
+                                <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+                                    <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Sign Up</p>
+                                    <!-- Form starts here -->
+                                    <form method="POST" action="{% url 'signup' %}">
+                                        {% csrf_token %}
+
+                                        <!-- Display form errors -->
+                                        {% if form.errors %}
+                                        <div class="alert alert-danger">
+                                            <strong>Please correct the errors below:</strong>
+                                            <ul class="mb-0 mt-2">
+                                                {% for field, errors in form.errors.items %}
+                                                    {% for error in errors %}
+                                                        <li>{{ error }}</li>
+                                                    {% endfor %}
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- First Name Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-user fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.first_name }}
+                                                <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+                                                {% for error in form.first_name.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Last Name Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-user fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.last_name }}
+                                                <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+                                                {% for error in form.last_name.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Email Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-envelope fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.email }}
+                                                <label class="form-label" for="{{ form.email.id_for_label }}">Email Address</label>
+                                                {% for error in form.email.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Username Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-at fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.username }}
+                                                <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+                                                {% for error in form.username.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Password Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-lock fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.password1 }}
+                                                <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+                                                {% for error in form.password1.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Confirm Password Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-key fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.password2 }}
+                                                <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                                                {% for error in form.password2.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Terms Checkbox -->
+                                        <div class="form-check d-flex justify-content-center mb-5">
+                                            <input class="form-check-input me-2" type="checkbox" id="termsCheckbox" />
+                                            <label class="form-check-label" for="termsCheckbox">
+                                                I agree to the <a href="#">Terms of Service</a>
+                                            </label>
+                                        </div>
+
+                                        <!-- Submit Button -->
+                                        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                                            <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                                        </div>
+                                    </form>
+
+                                    <div class="text-center">
+                                        <p>Already have an account?  
+                                            <a href="{% url 'login' %}" class="btn btn-link">Sign In</a>
+                                        </p>
+                                        {% load socialaccount %}
+                                        <br><br>
+                                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger btn-lg w-100">
+                                            <i class="fab fa-google me-2"></i>
+                                            <b>Sign up with Google</b>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
+                                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp" class="img-fluid" alt="Sample image">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+             
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Add form styling
+    document.addEventListener('DOMContentLoaded', function() {
+        // Style form inputs
+        const inputs = document.querySelectorAll('#id_first_name, #id_last_name, #id_email, #id_username, #id_password1, #id_password2');
+        inputs.forEach(input => {
+            input.className = 'form-control';
+        });
+    });
+    </script>
+</body>
+</html>

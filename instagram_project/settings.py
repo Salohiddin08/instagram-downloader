@@ -27,8 +27,7 @@ SECRET_KEY = 'django-insecure-u!rk*+@5r_^^2ztglju5^6&2npd!ez!nl4)(+nksug-291d1ed
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-
+SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = [
@@ -39,9 +38,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'downloader',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+
 MIDDLEWARE = [
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -127,3 +138,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Site ID for allauth
+SITE_ID = 1
+
+# Authentication settings
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Telegram Bot Configuration
+TELEGRAM_BOT_TOKEN = '8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E'
+TELEGRAM_BOT_USERNAME = 'social_downloader_site_bot'

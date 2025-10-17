@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load socialaccount %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Instagram Downloader</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="custom-bg min-vh-100 d-flex align-items-center justify-content-center">
+    <section class="vh-100">
+        <div class="container h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-lg-12 col-xl-11">
+                    <div class="card text-black" style="border-radius: 25px;">
+                        <div class="card-body p-md-5">
+                            <div class="row justify-content-center">
+                                <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+                                    <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Sign In</p>
+                                    <form class="mx-1 mx-md-4" method="post" action="">
+                                        {% csrf_token %}
+
+                                        <!-- Display form errors -->
+                                        {% if form.errors %}
+                                        <div class="alert alert-danger">
+                                            {% for field, errors in form.errors.items %}
+                                                {% for error in errors %}
+                                                    {{ error }}<br>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Username Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-user fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.username.label_tag }}
+                                                {{ form.username }}
+                                                {% for error in form.username.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Password Field -->
+                                        <div class="d-flex flex-row align-items-center mb-4">
+                                            <i class="fas fa-lock fa-lg me-3"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                {{ form.password.label_tag }}
+                                                {{ form.password }}
+                                                {% for error in form.password.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Remember Me -->
+                                        <div class="form-check d-flex justify-content-center mb-5">
+                                            <input class="form-check-input me-2" type="checkbox" id="rememberMe" />
+                                            <label class="form-check-label" for="rememberMe">Remember Me</label>
+                                        </div>
+
+                                        <!-- Submit Button -->
+                                        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                                            <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                                        </div>
+                                    </form>
+                                    
+                                    <!-- Google Sign-In -->
+                                    {% get_providers as socialaccount_providers %}
+                                    {% for provider in socialaccount_providers %}
+                                        {% if provider.id == "google" %}
+                                            <div class="text-center mb-4">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <hr class="flex-grow-1">
+                                                    <span class="px-3 text-muted">Or continue with</span>
+                                                    <hr class="flex-grow-1">
+                                                </div>
+                                                <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger btn-lg w-100">
+                                                    <i class="fab fa-google me-2"></i>
+                                                    Sign in with Google
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <!-- Telegram Login -->
+                                    <div class="text-center mb-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <hr class="flex-grow-1">
+                                            <span class="px-3 text-muted">Or continue with</span>
+                                            <hr class="flex-grow-1">
+                                        </div>
+                                        <a href="{% url 'telegram_login' %}" class="btn btn-info btn-lg w-100 mb-2" style="background-color: #0088cc; border-color: #0088cc;">
+                                            <i class="fab fa-telegram me-2"></i>
+                                            Sign in with Telegram
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <p>Don't have an account?  
+                                            <a href="{% url 'signup' %}" class="btn btn-link">Sign Up</a>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
+                                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp" class="img-fluid" alt="Sample image">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Add form styling
+    document.addEventListener('DOMContentLoaded', function() {
+        // Style form inputs
+        const inputs = document.querySelectorAll('#id_username, #id_password');
+        inputs.forEach(input => {
+            input.className = 'form-control';
+        });
+    });
+    </script>
+</body>
+</html>
