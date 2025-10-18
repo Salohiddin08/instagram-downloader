@@ -158,10 +158,10 @@ class SimpleWorkingBot:
         await update.message.reply_text(
             "🤖 Social Media Downloader Bot Yordam\n\n"
             "📱 Qo'llab quvvatlanadigan platformalar:\n"
-            "• Instagram (postlar, reels, hikoyalar)\n"
-            "• Facebook (videolar, watch)\n"
+            "• Instagram (postlar, reels, hikoyalar, rasmlar)\n"
+            "• Facebook (videolar, watch, rasmlar)\n"
             "• TikTok (videolar, qisqa havolalar)\n"
-            "• Pinterest (pinlar, videolar)\n\n"
+            "• Pinterest (pinlar, videolar, rasmlar)\n\n"
             "Buyruqlar:\n"
             "• /start - Boshlash va ro'yxatdan o'tish\n"
             "• /help - Ushbu yordamni ko'rsatish\n\n"
@@ -255,15 +255,25 @@ class SimpleWorkingBot:
         """Send download result to user"""
         try:
             if video_obj.status == 'completed' and video_obj.file_path and os.path.exists(video_obj.file_path):
-                # Try to send video file
+                # Try to send media file (video or image)
                 try:
-                    with open(video_obj.file_path, 'rb') as video_file:
-                        await update.message.reply_video(
-                            video=video_file,
-                            caption=f"✅ Downloaded from {video_obj.platform.title()}!\n\n"
-                                   f"🎥 Title: {video_obj.title}\n"
-                                   f"📅 Downloaded: {video_obj.completed_at.strftime('%Y-%m-%d %H:%M')}"
-                        )
+                    with open(video_obj.file_path, 'rb') as media_file:
+                        media_type = getattr(video_obj, 'media_type', 'video')
+                        
+                        if media_type == 'image':
+                            await update.message.reply_photo(
+                                photo=media_file,
+                                caption=f"✅ {video_obj.platform.title()}dan rasm yuklab olindi!\n\n"
+                                       f"🖼️ Sarlavha: {video_obj.title}\n"
+                                       f"📅 Yuklangan: {video_obj.completed_at.strftime('%Y-%m-%d %H:%M')}"
+                            )
+                        else:
+                            await update.message.reply_video(
+                                video=media_file,
+                                caption=f"✅ {video_obj.platform.title()}dan video yuklab olindi!\n\n"
+                                       f"🎥 Sarlavha: {video_obj.title}\n"
+                                       f"📅 Yuklangan: {video_obj.completed_at.strftime('%Y-%m-%d %H:%M')}"
+                            )
                         await processing_msg.delete()
                 except Exception as e:
                     await processing_msg.edit_text(

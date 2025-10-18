@@ -29,6 +29,7 @@ def home(request):
             # Detect and set platform
             platform = detect_platform(video.url)
             video.platform = platform
+            video.media_type = 'unknown'  # Will be determined during download
             video.save()
             
             # Start download in background thread
@@ -121,7 +122,7 @@ def logout_view(request):
     """Custom logout view that logs out user and redirects to home"""
     from django.contrib.auth import logout
     logout(request)
-    messages.success(request, 'You have been successfully logged out.')
+    messages.success(request, 'Siz muvaffaqiyatli hisobdan chiqdingiz.')
     return redirect('login')
 
 
@@ -149,7 +150,7 @@ def telegram_login(request):
         phone_number = request.POST.get('phone_number', '').strip()
         
         if not phone_number:
-            messages.error(request, 'Please enter your phone number')
+            messages.error(request, 'Iltimos, telefon raqamingizni kiriting')
             return render(request, 'registration/telegram_login.html')
         
         # Normalize phone number format
@@ -162,10 +163,10 @@ def telegram_login(request):
         if otp:
             # Store phone_number in session for OTP verification
             request.session['phone_number'] = phone_number
-            messages.success(request, 'OTP code has been sent to your Telegram account!')
+            messages.success(request, 'OTP kodi Telegram akkauntingizga yuborildi!')
             return redirect('telegram_verify_otp')
         else:
-            messages.error(request, error_message or 'Failed to send OTP. Please make sure you have registered with our bot.')
+            messages.error(request, error_message or 'OTP yuborishda xatolik. Iltimos, botimizda ro\'yxatdan o\'tganingizga ishonch hosil qiling.')
     
     return render(request, 'registration/telegram_login.html')
 
@@ -175,14 +176,14 @@ def telegram_verify_otp(request):
     phone_number = request.session.get('phone_number')
     
     if not phone_number:
-        messages.error(request, 'Please start the login process again')
+        messages.error(request, 'Iltimos, kirish jarayonini qaytadan boshlang')
         return redirect('telegram_login')
     
     if request.method == 'POST':
         otp_code = request.POST.get('otp_code', '').strip()
         
         if not otp_code:
-            messages.error(request, 'Please enter the OTP code')
+            messages.error(request, 'Iltimos, OTP kodini kiriting')
             return render(request, 'registration/telegram_verify_otp.html', {'phone_number': phone_number})
         
         # Verify OTP
@@ -202,10 +203,10 @@ def telegram_verify_otp(request):
                 if 'phone_number' in request.session:
                     del request.session['phone_number']
                 
-                messages.success(request, f'Successfully logged in via Telegram! {user_message}')
+                messages.success(request, f'Telegram orqali muvaffaqiyatli kirildi! {user_message}')
                 return redirect('home')
             else:
-                messages.error(request, f'Failed to create user account: {user_message}')
+                messages.error(request, f'Foydalanuvchi hisobi yaratishda xatolik: {user_message}')
         else:
             messages.error(request, message)
     
@@ -217,16 +218,16 @@ def telegram_resend_otp(request):
     phone_number = request.session.get('phone_number')
     
     if not phone_number:
-        messages.error(request, 'Please start the login process again')
+        messages.error(request, 'Iltimos, kirish jarayonini qaytadan boshlang')
         return redirect('telegram_login')
     
     # Create and send new OTP
     otp, error_message = telegram_service.create_otp_for_phone_number(phone_number)
     
     if otp:
-        messages.success(request, 'New OTP code has been sent to your Telegram account!')
+        messages.success(request, 'Yangi OTP kodi Telegram akkauntingizga yuborildi!')
     else:
-        messages.error(request, error_message or 'Failed to send OTP. Please try again.')
+        messages.error(request, error_message or 'OTP yuborishda xatolik. Qaytadan urinib ko\'ring.')
     
     return redirect('telegram_verify_otp')
 
@@ -235,25 +236,25 @@ def telegram_resend_otp(request):
 def telegram_link_account(request):
     """Link existing account with Telegram"""
     if hasattr(request.user, 'telegram_profile'):
-        messages.info(request, 'Your account is already linked to Telegram')
+        messages.info(request, 'Sizning akkauntingiz allaqachon Telegram bilan bog\'langan')
         return redirect('home')
     
     if request.method == 'POST':
         telegram_id = request.POST.get('telegram_id', '').strip()
         
         if not telegram_id:
-            messages.error(request, 'Please enter your Telegram ID')
+            messages.error(request, 'Iltimos, Telegram ID raqamingizni kiriting')
             return render(request, 'registration/telegram_link.html')
         
         try:
             telegram_id = int(telegram_id)
         except ValueError:
-            messages.error(request, 'Invalid Telegram ID format')
+            messages.error(request, 'Noto\'g\'ri Telegram ID formati')
             return render(request, 'registration/telegram_link.html')
         
         # Check if this Telegram ID is already linked to another account
         if TelegramUser.objects.filter(telegram_id=telegram_id).exists():
-            messages.error(request, 'This Telegram account is already linked to another user')
+            messages.error(request, 'Bu Telegram akkaunti boshqa foydalanuvchi bilan bog\'langan')
             return render(request, 'registration/telegram_link.html')
         
         # Create and send OTP for verification
@@ -261,10 +262,10 @@ def telegram_link_account(request):
         
         if otp:
             request.session['link_telegram_id'] = telegram_id
-            messages.success(request, 'OTP code has been sent to your Telegram account!')
+            messages.success(request, 'OTP kodi Telegram akkauntingizga yuborildi!')
             return redirect('telegram_verify_link')
         else:
-            messages.error(request, 'Failed to send OTP. Please make sure your Telegram ID is correct and you have started the bot.')
+            messages.error(request, 'OTP yuborishda xatolik. Telegram ID raqamingizni to\'g\'ri kiritganingizga va botni boshlganingizga ishonch hosil qiling.')
     
     return render(request, 'registration/telegram_link.html')
 
@@ -275,14 +276,14 @@ def telegram_verify_link(request):
     telegram_id = request.session.get('link_telegram_id')
     
     if not telegram_id:
-        messages.error(request, 'Please start the linking process again')
+        messages.error(request, 'Iltimos, bog\'lash jarayonini qaytadan boshlang')
         return redirect('telegram_link_account')
     
     if request.method == 'POST':
         otp_code = request.POST.get('otp_code', '').strip()
         
         if not otp_code:
-            messages.error(request, 'Please enter the OTP code')
+            messages.error(request, 'Iltimos, OTP kodini kiriting')
             return render(request, 'registration/telegram_verify_link.html', {'telegram_id': telegram_id})
         
         # Verify OTP
@@ -300,7 +301,7 @@ def telegram_verify_link(request):
             if 'link_telegram_id' in request.session:
                 del request.session['link_telegram_id']
             
-            messages.success(request, 'Your account has been successfully linked to Telegram!')
+            messages.success(request, 'Sizning akkauntingiz muvaffaqiyatli Telegram bilan bog\'landi!')
             return redirect('home')
         else:
             messages.error(request, message)

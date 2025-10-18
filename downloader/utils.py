@@ -1,9 +1,12 @@
 import os
 import re
+import requests
 import yt_dlp
 from django.conf import settings
 from django.utils import timezone
 from .models import DownloadedVideo
+from urllib.parse import urlparse
+from PIL import Image
 
 
 # Platform detection patterns
@@ -25,7 +28,9 @@ PLATFORM_PATTERNS = {
     'pinterest': [
         r'(?:https?://)?(?:www\.)?pinterest\.[^/]+/pin/([0-9]+)/?',
         r'(?:https?://)?(?:www\.)?pinterest\.[^/]+/[^/]+/[^/]+/([A-Za-z0-9_-]+)/?',
-        r'(?:https?://)?(?:www\.)?pinterest\.[^/]+/.*'
+        r'(?:https?://)?(?:www\.)?pinterest\.[^/]+/.*',
+        r'(?:https?://)?pin\.it/([A-Za-z0-9_-]+)/?',  # Pinterest short URLs
+        r'(?:https?://)?(?:www\.)?pin\.it/([A-Za-z0-9_-]+)/?'  # Alternative pin.it format
     ]
 }
 
@@ -100,6 +105,98 @@ def get_platform_config(platform):
     return config
 
 
+def download_image_from_url(video_obj, image_url, title="Unknown"):
+    """
+    Download image from direct URL
+    """
+    try:
+        # Create media directory
+        media_path = os.path.join(settings.MEDIA_ROOT, 'downloads', video_obj.platform)
+        os.makedirs(media_path, exist_ok=True)
+        
+        # Get image
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(image_url, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        # Determine file extension
+        content_type = response.headers.get('content-type', '')
+        if 'jpeg' in content_type or 'jpg' in content_type:
+            ext = 'jpg'
+        elif 'png' in content_type:
+            ext = 'png'
+        elif 'webp' in content_type:
+            ext = 'webp'
+        else:
+            # Try to determine from URL
+            parsed_url = urlparse(image_url)
+            if parsed_url.path.endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                ext = parsed_url.path.split('.')[-1]
+            else:
+                ext = 'jpg'  # Default
+        
+        # Create filename
+        safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).rstrip()[:50]
+        if not safe_title:
+            safe_title = "image"
+        
+        filename = f"{safe_title}.{ext}"
+        file_path = os.path.join(media_path, filename)
+        
+        # Save image
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+        
+        # Verify it's a valid image
+        try:
+            with Image.open(file_path) as img:
+                img.verify()
+        except Exception:
+            # If verification fails, still consider it successful
+            pass
+        
+        video_obj.filename = filename
+        video_obj.file_path = file_path
+        video_obj.title = title
+        video_obj.media_type = 'image'
+        video_obj.status = 'completed'
+        video_obj.completed_at = timezone.now()
+        video_obj.save()
+        
+        # Schedule automatic deletion after 10 minutes
+        try:
+            from .tasks import schedule_cleanup_after_download
+            schedule_cleanup_after_download(video_obj.id, delay_minutes=10)
+        except ImportError:
+            # If Celery is not available, use simple threading approach
+            import threading
+            import time
+            
+            def delayed_cleanup():
+                time.sleep(10 * 60)  # Wait 10 minutes
+                try:
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        video_obj.file_path = ''
+                        video_obj.filename = ''
+                        video_obj.save()
+                except Exception as e:
+                    pass  # Silently ignore cleanup errors
+            
+            cleanup_thread = threading.Thread(target=delayed_cleanup, daemon=True)
+            cleanup_thread.start()
+        
+        return True
+        
+    except Exception as e:
+        video_obj.status = 'failed'
+        video_obj.error_message = f'Rasm yuklab olishda xatolik: {str(e)}'
+        video_obj.save()
+        return False
+
+
 def download_video(video_obj):
     """
     Universal video downloader that handles all supported platforms
@@ -122,26 +219,98 @@ def download_video(video_obj):
             video_obj.save()
             return video_obj
         
-        # Platform-specific pre-checks
-        if video_obj.platform == 'pinterest':
-            # Pinterest often contains images, not videos
-            try:
-                # Quick check to see if this URL actually contains video
-                test_opts = {'quiet': True, 'no_warnings': True, 'simulate': True}
-                with yt_dlp.YoutubeDL(test_opts) as ydl:
-                    info = ydl.extract_info(video_obj.url, download=False)
-                    formats = info.get('formats', [])
-                    if not formats:
-                        video_obj.status = 'failed'
-                        video_obj.error_message = 'Bu Pinterest post videosiz, faqat rasm bor. Video yuklab olish uchun video bor postni tanlang.'
-                        video_obj.save()
-                        return video_obj
-            except Exception as e:
-                if 'No video formats found' in str(e):
+        # Try to get media info first
+        try:
+            info_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                **get_platform_config(video_obj.platform)
+            }
+            
+            with yt_dlp.YoutubeDL(info_opts) as ydl:
+                info = ydl.extract_info(video_obj.url, download=False)
+                video_obj.title = info.get('title', 'Unknown')
+                
+                # Check if it has video formats
+                formats = info.get('formats', [])
+                video_formats = [f for f in formats if f.get('vcodec') != 'none']
+                
+                # If no video formats, try to get image/thumbnail
+                if not video_formats:
+                    # Look for high quality images/thumbnails
+                    thumbnails = info.get('thumbnails', [])
+                    
+                    # Try to find the best quality image
+                    best_thumb = None
+                    for thumb in thumbnails:
+                        if thumb.get('url'):
+                            # Prefer larger images
+                            if not best_thumb or (thumb.get('width', 0) * thumb.get('height', 0)) > (best_thumb.get('width', 0) * best_thumb.get('height', 0)):
+                                best_thumb = thumb
+                    
+                    # If we found a good thumbnail/image, download it
+                    if best_thumb and best_thumb.get('url'):
+                        success = download_image_from_url(video_obj, best_thumb['url'], video_obj.title)
+                        if success:
+                            return video_obj
+                    
+                    # Try direct image extraction for Pinterest and other image platforms
+                    if video_obj.platform in ['pinterest', 'instagram']:
+                        image_url = info.get('url') or info.get('webpage_url')
+                        if image_url:
+                            # For Pinterest, try to extract direct image URL
+                            if 'pinterest' in image_url or 'pin.it' in image_url:
+                                try:
+                                    # Pinterest specific image extraction
+                                    import re
+                                    
+                                    # Look for Pinterest image URLs in the info
+                                    info_str = str(info)
+                                    
+                                    # Find pinimg.com URLs (Pinterest CDN)
+                                    pinimg_urls = re.findall(r'https://[^"\s]+\.pinimg\.com/[^"\s]+', info_str)
+                                    for img_url in pinimg_urls:
+                                        # Try different sizes: original (236x), 474x, 736x, etc.
+                                        if any(size in img_url for size in ['236x', '474x', '736x', '1200x', 'originals']):
+                                            if ('jpg' in img_url or 'png' in img_url or 'webp' in img_url):
+                                                success = download_image_from_url(video_obj, img_url, video_obj.title)
+                                                if success:
+                                                    return video_obj
+                                    
+                                    # Try to find image URLs in different formats
+                                    image_patterns = [
+                                        r'https://[^"\s]+\.(jpg|jpeg|png|webp)',
+                                        r'"(https://[^"]+pinimg\.com[^"]+)"',
+                                        r'"url":\s*"([^"]+\.(jpg|jpeg|png|webp)[^"]*?)"'
+                                    ]
+                                    
+                                    for pattern in image_patterns:
+                                        matches = re.findall(pattern, info_str, re.IGNORECASE)
+                                        for match in matches:
+                                            img_url = match[0] if isinstance(match, tuple) else match
+                                            if 'pinimg.com' in img_url or 'pinterest' in img_url:
+                                                success = download_image_from_url(video_obj, img_url, video_obj.title)
+                                                if success:
+                                                    return video_obj
+                                    
+                                    # Also try thumbnail URLs from info
+                                    if info.get('thumbnail'):
+                                        success = download_image_from_url(video_obj, info['thumbnail'], video_obj.title)
+                                        if success:
+                                            return video_obj
+                                            
+                                except Exception as e:
+                                    pass
+                    
+                    # If no image found, return error
                     video_obj.status = 'failed'
-                    video_obj.error_message = 'Bu Pinterest post videosiz. Faqat video bor postlarni yuklab olish mumkin.'
+                    video_obj.error_message = f'Bu {video_obj.platform.title()} postdan video yoki rasm topilmadi. URL ni tekshiring.'
                     video_obj.save()
                     return video_obj
+                    
+        except Exception as e:
+            # If info extraction fails, continue with regular download attempt
+            pass
         
         # Create media directory if it doesn't exist
         media_path = os.path.join(settings.MEDIA_ROOT, 'downloads', video_obj.platform)
@@ -187,8 +356,34 @@ def download_video(video_obj):
                     if os.path.exists(expected_filename):
                         video_obj.filename = os.path.basename(expected_filename)
                         video_obj.file_path = expected_filename
+                        video_obj.media_type = 'video'
                         video_obj.status = 'completed'
                         video_obj.completed_at = timezone.now()
+                        video_obj.save()
+                        
+                        # Schedule automatic deletion after 10 minutes
+                        try:
+                            from .tasks import schedule_cleanup_after_download
+                            schedule_cleanup_after_download(video_obj.id, delay_minutes=10)
+                        except ImportError:
+                            # If Celery is not available, use simple threading approach
+                            import threading
+                            import time
+                            
+                            def delayed_cleanup():
+                                time.sleep(10 * 60)  # Wait 10 minutes
+                                try:
+                                    if os.path.exists(expected_filename):
+                                        os.remove(expected_filename)
+                                        video_obj.file_path = ''
+                                        video_obj.filename = ''
+                                        video_obj.save()
+                                except Exception as e:
+                                    pass  # Silently ignore cleanup errors
+                            
+                            cleanup_thread = threading.Thread(target=delayed_cleanup, daemon=True)
+                            cleanup_thread.start()
+                        
                         download_success = True
                         break
                     

@@ -26,10 +26,10 @@ class TelegramAuthService:
             return False
         
         try:
-            message = f"🔐 Your login code for Instagram Downloader:\n\n" \
+            message = f"🔐 Social Media Downloader uchun kirish kodingiz:\n\n" \
                      f"**{otp_code}**\n\n" \
-                     f"This code will expire in 10 minutes.\n" \
-                     f"Don't share this code with anyone!"
+                     f"Bu kod 10 daqiqada muddati tugaydi.\n" \
+                     f"Bu kodni hech kimga bermang!"
             
             await self.bot.send_message(
                 chat_id=telegram_id,
@@ -65,7 +65,11 @@ class TelegramAuthService:
             
             if not telegram_user:
                 logger.error(f"No Telegram user found for phone number: {phone_number}")
-                return None, "Phone number not registered. Please register first by messaging our bot."
+                return None, "Telefon raqami ro'yxatdan o'tmagan. Iltimos, avval botimizga xabar yozing va ro'yxatdan o'ting."
+            
+            if not telegram_user.telegram_id:
+                logger.error(f"Telegram ID not found for phone number: {phone_number}")
+                return None, "Telegram ID topilmadi. Iltimos, botda qaytadan ro'yxatdan o'ting."
             
             telegram_id = telegram_user.telegram_id
             
@@ -93,7 +97,7 @@ class TelegramAuthService:
                 otp.is_used = True
                 otp.save()
                 logger.error(f"Failed to send OTP for phone number: {phone_number}")
-                return None, "Failed to send OTP. Please try again."
+                return None, "OTP yuborishda xatolik. Iltimos, qaytadan urinib ko'ring. Botni ishga tushirganingizga ishonch hosil qiling."
                 
         except Exception as e:
             logger.error(f"Error creating OTP for phone number {phone_number}: {e}")
@@ -110,7 +114,7 @@ class TelegramAuthService:
             
             if not otp:
                 logger.warning(f"OTP not found for phone number: {phone_number}")
-                return False, "Invalid OTP code"
+                return False, "Noto'g'ri OTP kod"
             
             # Increment attempts
             otp.attempts += 1
@@ -118,18 +122,18 @@ class TelegramAuthService:
             
             if not otp.is_valid():
                 if otp.is_expired():
-                    return False, "OTP code has expired"
+                    return False, "OTP kodining muddati tugagan"
                 elif otp.attempts >= otp.max_attempts:
-                    return False, "Too many attempts. Please request a new code"
+                    return False, "Juda ko'p urinish. Iltimos, yangi kod so'rang"
                 else:
-                    return False, "Invalid OTP code"
+                    return False, "Noto'g'ri OTP kod"
             
             # Mark OTP as used
             otp.is_used = True
             otp.save()
             
             logger.info(f"OTP verified successfully for phone number: {phone_number}")
-            return True, "OTP verified successfully"
+            return True, "OTP muvaffaqiyatli tasdiqlandi"
             
         except Exception as e:
             logger.error(f"Error verifying OTP for phone number {phone_number}: {e}")

@@ -18,13 +18,14 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Title</th>
-                                    <th>Platform</th>
+                                    <th>Sarlavha</th>
+                                    <th>Tur</th>
+                                    <th>Platforma</th>
                                     <th>URL</th>
-                                    <th>Status</th>
-                                    <th>Started</th>
-                                    <th>Completed</th>
-                                    <th>Actions</th>
+                                    <th>Holat</th>
+                                    <th>Boshlangan</th>
+                                    <th>Tugallangan</th>
+                                    <th>Amallar</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -32,11 +33,22 @@
                                 <tr>
                                     <td>
                                         <div>
-                                            <strong>{{ download.title|default:"Processing..." }}</strong>
+                                            <strong>{{ download.title|default:"Jarayonda..." }}</strong>
                                             {% if download.filename %}
                                                 <br><small class="text-muted">{{ download.filename }}</small>
                                             {% endif %}
                                         </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if download.media_type == 'video' %}bg-success{% endif %}
+                                            {% if download.media_type == 'image' %}bg-info{% endif %}
+                                            {% if download.media_type == 'unknown' %}bg-secondary{% endif %}
+                                        ">
+                                            {% if download.media_type == 'video' %}<i class="fas fa-video"></i> Video{% endif %}
+                                            {% if download.media_type == 'image' %}<i class="fas fa-image"></i> Rasm{% endif %}
+                                            {% if download.media_type == 'unknown' %}<i class="fas fa-question"></i> Noma'lum{% endif %}
+                                        </span>
                                     </td>
                                     <td>
                                         <span class="badge 
@@ -63,13 +75,13 @@
                                     <td>
                                         <span class="badge status-{{ download.status }}">
                                             {% if download.status == 'pending' %}
-                                                <i class="fas fa-clock"></i> Pending
+                                                <i class="fas fa-clock"></i> Kutilmoqda
                                             {% elif download.status == 'downloading' %}
-                                                <i class="fas fa-spinner fa-spin"></i> Downloading
+                                                <i class="fas fa-spinner fa-spin"></i> Yuklanmoqda
                                             {% elif download.status == 'completed' %}
-                                                <i class="fas fa-check"></i> Completed
+                                                <i class="fas fa-check"></i> Tayyor
                                             {% else %}
-                                                <i class="fas fa-times"></i> Failed
+                                                <i class="fas fa-times"></i> Xatolik
                                             {% endif %}
                                         </span>
                                         {% if download.error_message %}

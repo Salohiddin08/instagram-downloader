@@ -12,7 +12,7 @@ class VideoDownloadForm(forms.ModelForm):
         widgets = {
             'url': forms.URLInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Enter video URL from Instagram, Facebook, TikTok, or Pinterest',
+                'placeholder': 'Video yoki rasm URL ni kiriting (Instagram, Facebook, TikTok, Pinterest)',
                 'required': True
             })
         }

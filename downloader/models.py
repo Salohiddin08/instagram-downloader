@@ -21,9 +21,16 @@ class DownloadedVideo(models.Model):
         ('other', 'Other'),
     ]
     
+    MEDIA_TYPE_CHOICES = [
+        ('video', 'Video'),
+        ('image', 'Image'),
+        ('unknown', 'Unknown'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField(max_length=500)
     platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, default='other')
+    media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='unknown')
     title = models.CharField(max_length=255, blank=True)
     filename = models.CharField(max_length=255, blank=True)
     file_path = models.CharField(max_length=500, blank=True)
