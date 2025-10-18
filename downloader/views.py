@@ -13,7 +13,7 @@ import threading
 
 from .models import DownloadedVideo, TelegramOTP, TelegramUser
 from .forms import VideoDownloadForm, CustomUserCreationForm
-from .utils import download_instagram_video, get_video_info
+from .utils import download_video, get_video_info, detect_platform
 from .telegram_utils import telegram_service
 
 
@@ -25,9 +25,14 @@ def home(request):
         if form.is_valid():
             video = form.save(commit=False)
             video.user = request.user
+            
+            # Detect and set platform
+            platform = detect_platform(video.url)
+            video.platform = platform
             video.save()
+            
             # Start download in background thread
-            thread = threading.Thread(target=download_instagram_video, args=(video,))
+            thread = threading.Thread(target=download_video, args=(video,))
             thread.daemon = True
             thread.start()
             

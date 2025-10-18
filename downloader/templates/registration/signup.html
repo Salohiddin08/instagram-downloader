@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Instagram Downloader</title>
+    <title>Ro'yxatdan o'tish - Social Media Downloader</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         .custom-bg {
-            background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .glass-effect {
-            background: rgba(255, 255, 255,);
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
         }
     </style>
@@ -27,7 +27,10 @@
                         <div class="card-body p-md-5">
                             <div class="row justify-content-center">
                                 <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
-                                    <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Sign Up</p>
+                                    <div class="text-center mb-4">
+                                        <h1 class="fw-bold text-primary"><i class="fas fa-share-alt"></i> Social Media Downloader</h1>
+                                        <p class="h3 fw-bold mb-5 mx-1 mx-md-4 mt-4">Ro'yxatdan o'tish</p>
+                                    </div>
                                     <!-- Form starts here -->
                                     <form method="POST" action="{% url 'signup' %}">
                                         {% csrf_token %}
@@ -35,7 +38,7 @@
                                         <!-- Display form errors -->
                                         {% if form.errors %}
                                         <div class="alert alert-danger">
-                                            <strong>Please correct the errors below:</strong>
+                                            <strong>Iltimos, quyidagi xatolarni to'g'irlang:</strong>
                                             <ul class="mb-0 mt-2">
                                                 {% for field, errors in form.errors.items %}
                                                     {% for error in errors %}
@@ -51,7 +54,7 @@
                                             <i class="fas fa-user fa-lg me-3"></i>
                                             <div class="form-outline flex-fill mb-0">
                                                 {{ form.first_name }}
-                                                <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+                                                <label class="form-label" for="{{ form.first_name.id_for_label }}">Ism</label>
                                                 {% for error in form.first_name.errors %}
                                                     <div class="text-danger small">{{ error }}</div>
                                                 {% endfor %}
@@ -63,7 +66,7 @@
                                             <i class="fas fa-user fa-lg me-3"></i>
                                             <div class="form-outline flex-fill mb-0">
                                                 {{ form.last_name }}
-                                                <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+                                                <label class="form-label" for="{{ form.last_name.id_for_label }}">Familiya</label>
                                                 {% for error in form.last_name.errors %}
                                                     <div class="text-danger small">{{ error }}</div>
                                                 {% endfor %}
@@ -75,7 +78,7 @@
                                             <i class="fas fa-envelope fa-lg me-3"></i>
                                             <div class="form-outline flex-fill mb-0">
                                                 {{ form.email }}
-                                                <label class="form-label" for="{{ form.email.id_for_label }}">Email Address</label>
+                                                <label class="form-label" for="{{ form.email.id_for_label }}">Email manzil</label>
                                                 {% for error in form.email.errors %}
                                                     <div class="text-danger small">{{ error }}</div>
                                                 {% endfor %}
@@ -87,7 +90,7 @@
                                             <i class="fas fa-at fa-lg me-3"></i>
                                             <div class="form-outline flex-fill mb-0">
                                                 {{ form.username }}
-                                                <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+                                                <label class="form-label" for="{{ form.username.id_for_label }}">Foydalanuvchi nomi</label>
                                                 {% for error in form.username.errors %}
                                                     <div class="text-danger small">{{ error }}</div>
                                                 {% endfor %}
@@ -99,7 +102,7 @@
                                             <i class="fas fa-lock fa-lg me-3"></i>
                                             <div class="form-outline flex-fill mb-0">
                                                 {{ form.password1 }}
-                                                <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+                                                <label class="form-label" for="{{ form.password1.id_for_label }}">Parol</label>
                                                 {% for error in form.password1.errors %}
                                                     <div class="text-danger small">{{ error }}</div>
                                                 {% endfor %}
@@ -111,7 +114,7 @@
                                             <i class="fas fa-key fa-lg me-3"></i>
                                             <div class="form-outline flex-fill mb-0">
                                                 {{ form.password2 }}
-                                                <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                                                <label class="form-label" for="{{ form.password2.id_for_label }}">Parolni tasdiqlash</label>
                                                 {% for error in form.password2.errors %}
                                                     <div class="text-danger small">{{ error }}</div>
                                                 {% endfor %}
@@ -122,31 +125,48 @@
                                         <div class="form-check d-flex justify-content-center mb-5">
                                             <input class="form-check-input me-2" type="checkbox" id="termsCheckbox" />
                                             <label class="form-check-label" for="termsCheckbox">
-                                                I agree to the <a href="#">Terms of Service</a>
+                                                <a href="#">Foydalanish shartlari</a> bilan roziman
                                             </label>
                                         </div>
 
                                         <!-- Submit Button -->
                                         <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
-                                            <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                                            <button type="submit" class="btn btn-primary btn-lg">Hisob yaratish</button>
                                         </div>
                                     </form>
 
-                                    <div class="text-center">
-                                        <p>Already have an account?  
-                                            <a href="{% url 'login' %}" class="btn btn-link">Sign In</a>
-                                        </p>
-                                        {% load socialaccount %}
-                                        <br><br>
-                                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger btn-lg w-100">
-                                            <i class="fab fa-google me-2"></i>
-                                            <b>Sign up with Google</b>
+                                    <!-- Telegram Login -->
+                                    <div class="text-center mb-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <hr class="flex-grow-1">
+                                            <span class="px-3 text-muted">Yoki davom eting</span>
+                                            <hr class="flex-grow-1">
+                                        </div>
+                                        <a href="{% url 'telegram_login' %}" class="btn btn-info btn-lg w-100 mb-2" style="background-color: #0088cc; border-color: #0088cc;">
+                                            <i class="fab fa-telegram me-2"></i>
+                                            Telegram bilan ro'yxatdan o'tish
                                         </a>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <p>Hisobingiz bormi?  
+                                            <a href="{% url 'login' %}" class="btn btn-link">Kirish</a>
+                                        </p>
                                     </div>
                                 </div>
 
                                 <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
-                                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp" class="img-fluid" alt="Sample image">
+                                    <div class="text-center p-5">
+                                        <i class="fas fa-share-alt" style="font-size: 10rem; color: #667eea;"></i>
+                                        <h2 class="mt-4 text-primary">Social Media Downloader</h2>
+                                        <p class="text-muted">Ijtimoiy tarmoqlardan videolarni yuklab oling</p>
+                                        <div class="d-flex justify-content-center gap-2 mt-4">
+                                            <i class="fab fa-instagram fa-2x text-danger"></i>
+                                            <i class="fab fa-facebook fa-2x text-primary"></i>
+                                            <i class="fab fa-tiktok fa-2x text-dark"></i>
+                                            <i class="fab fa-pinterest fa-2x text-danger"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

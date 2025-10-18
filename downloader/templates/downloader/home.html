@@ -1,6 +1,6 @@
 {% extends 'downloader/base.html' %}
 
-{% block title %}Instagram Video Downloader - Home{% endblock %}
+{% block title %}Social Media Downloader - Ijtimoiy tarmoq yuklovchi{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -9,9 +9,15 @@
             <div class="card-body p-5">
                 <div class="text-center mb-4">
                     <h1 class="display-4 text-gradient">
-                        <i class="fab fa-instagram text-danger"></i> Instagram Downloader
+                        <i class="fas fa-share-alt text-primary"></i> <strong>Social Media Downloader</strong>
                     </h1>
-                    <p class="lead text-muted">Download Instagram posts, reels, stories, and IGTV videos</p>
+                    <p class="lead text-muted">Instagram, Facebook, TikTok va Pinterest dan videolarni yuklab oling</p>
+                    <div class="d-flex justify-content-center gap-3 mt-2">
+                        <span class="badge bg-danger fs-6"><i class="fab fa-instagram"></i> Instagram</span>
+                        <span class="badge bg-primary fs-6"><i class="fab fa-facebook"></i> Facebook</span>
+                        <span class="badge bg-dark fs-6"><i class="fab fa-tiktok"></i> TikTok</span>
+                        <span class="badge bg-danger fs-6"><i class="fab fa-pinterest"></i> Pinterest</span>
+                    </div>
                 </div>
 
                 <form method="post" id="downloadForm">
@@ -28,31 +34,52 @@
                             {% endif %}
                         </div>
                         <div class="col-md-3">
-                            <button type="submit" class="btn btn-instagram w-100 text-white">
-                                <i class="fas fa-download"></i> Download
+                            <button type="submit" class="btn btn-primary w-100 text-white">
+                                <i class="fas fa-download"></i> Yuklab olish
                             </button>
                         </div>
                     </div>
                 </form>
 
                 <div class="mt-4 p-3 bg-light rounded">
-                    <h6><i class="fas fa-info-circle"></i> How to use:</h6>
+                    <h6><i class="fas fa-info-circle"></i> Qanday ishlatish:</h6>
                     <ol class="mb-0 small">
-                        <li>Copy the Instagram post/reel URL from your browser or app</li>
-                        <li>Paste the URL in the input field above</li>
-                        <li>Click Download and wait for the process to complete</li>
-                        <li>Download your video when ready</li>
+                        <li>Istalgan videoning havolasini brauzer yoki ilovadan nusxalang</li>
+                        <li>Havolani yuqoridagi maydonga joylashtiring</li>
+                        <li>"Yuklab olish" tugmasini bosing va jarayon tugashini kuting</li>
+                        <li>Video tayyor bo'lgach yuklab oling</li>
                     </ol>
                 </div>
 
-                <div class="mt-4 p-3 border-start border-warning border-4 bg-warning bg-opacity-10">
-                    <h6 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Supported URLs:</h6>
-                    <ul class="mb-0 small">
-                        <li>Instagram Posts: <code>https://www.instagram.com/p/...</code></li>
-                        <li>Instagram Reels: <code>https://www.instagram.com/reel/...</code></li>
-                        <li>Instagram Stories: <code>https://www.instagram.com/stories/...</code></li>
-                        <li>IGTV Videos: <code>https://www.instagram.com/tv/...</code></li>
-                    </ul>
+                <div class="mt-4 p-3 border-start border-success border-4 bg-success bg-opacity-10">
+                    <h6 class="text-success"><i class="fas fa-check-circle"></i> Qo'llab quvvatlanadigan platformalar:</h6>
+                    <div class="row small">
+                        <div class="col-md-6">
+                            <strong><i class="fab fa-instagram text-danger"></i> Instagram:</strong>
+                            <ul class="mb-2">
+                                <li>Postlar: <code>instagram.com/p/...</code></li>
+                                <li>Reels: <code>instagram.com/reel/...</code></li>
+                                <li>Stories: <code>instagram.com/stories/...</code></li>
+                            </ul>
+                            <strong><i class="fab fa-facebook text-primary"></i> Facebook:</strong>
+                            <ul class="mb-0">
+                                <li>Videolar: <code>facebook.com/watch/?v=...</code></li>
+                                <li>Qisqa havolalar: <code>fb.watch/...</code></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fab fa-tiktok text-dark"></i> TikTok:</strong>
+                            <ul class="mb-2">
+                                <li>Videolar: <code>tiktok.com/@user/video/...</code></li>
+                                <li>Qisqa havolalar: <code>vm.tiktok.com/...</code></li>
+                            </ul>
+                            <strong><i class="fab fa-pinterest text-danger"></i> Pinterest:</strong>
+                            <ul class="mb-0">
+                                <li>Pin videolar: <code>pinterest.com/pin/...</code></li>
+                                <li>Videolar: <code>pinterest.com/.../...</code></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -64,7 +91,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Downloads</h5>
+                <h5 class="mb-0"><i class="fas fa-history"></i> So'nggi yuklanmalar</h5>
             </div>
             <div class="card-body p-0">
                 {% for download in recent_downloads %}

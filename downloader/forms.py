@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import DownloadedVideo
+from .utils import detect_platform, validate_url
 
 
 class VideoDownloadForm(forms.ModelForm):
@@ -11,16 +12,21 @@ class VideoDownloadForm(forms.ModelForm):
         widgets = {
             'url': forms.URLInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Enter Instagram video URL (post, reel, story, etc.)',
+                'placeholder': 'Enter video URL from Instagram, Facebook, TikTok, or Pinterest',
                 'required': True
             })
         }
     
     def clean_url(self):
         url = self.cleaned_data['url']
-        # Basic Instagram URL validation
-        if 'instagram.com' not in url:
-            raise forms.ValidationError("Please enter a valid Instagram URL.")
+        
+        # Detect platform and validate URL
+        platform = detect_platform(url)
+        is_valid, message = validate_url(url, platform)
+        
+        if not is_valid:
+            raise forms.ValidationError(message)
+        
         return url
 
 

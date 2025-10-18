@@ -13,8 +13,17 @@ class DownloadedVideo(models.Model):
         ('failed', 'Failed'),
     ]
     
+    PLATFORM_CHOICES = [
+        ('instagram', 'Instagram'),
+        ('facebook', 'Facebook'),
+        ('tiktok', 'TikTok'),
+        ('pinterest', 'Pinterest'),
+        ('other', 'Other'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField(max_length=500)
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, default='other')
     title = models.CharField(max_length=255, blank=True)
     filename = models.CharField(max_length=255, blank=True)
     file_path = models.CharField(max_length=500, blank=True)

@@ -1,6 +1,6 @@
 {% extends 'downloader/base.html' %}
 
-{% block title %}All Downloads - Instagram Video Downloader{% endblock %}
+{% block title %}Barcha yuklanmalar - Social Media Downloader{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -19,6 +19,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Title</th>
+                                    <th>Platform</th>
                                     <th>URL</th>
                                     <th>Status</th>
                                     <th>Started</th>
@@ -38,8 +39,24 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <span class="badge 
+                                            {% if download.platform == 'instagram' %}bg-danger{% endif %}
+                                            {% if download.platform == 'facebook' %}bg-primary{% endif %}
+                                            {% if download.platform == 'tiktok' %}bg-dark{% endif %}
+                                            {% if download.platform == 'pinterest' %}bg-danger{% endif %}
+                                            {% if download.platform == 'other' %}bg-secondary{% endif %}
+                                        ">
+                                            {% if download.platform == 'instagram' %}<i class="fab fa-instagram"></i>{% endif %}
+                                            {% if download.platform == 'facebook' %}<i class="fab fa-facebook"></i>{% endif %}
+                                            {% if download.platform == 'tiktok' %}<i class="fab fa-tiktok"></i>{% endif %}
+                                            {% if download.platform == 'pinterest' %}<i class="fab fa-pinterest"></i>{% endif %}
+                                            {% if download.platform == 'other' %}<i class="fas fa-question"></i>{% endif %}
+                                            {{ download.platform|title|default:"Other" }}
+                                        </span>
+                                    </td>
+                                    <td>
                                         <a href="{{ download.url }}" target="_blank" class="text-decoration-none">
-                                            {{ download.url|truncatechars:50 }}
+                                            {{ download.url|truncatechars:40 }}
                                             <i class="fas fa-external-link-alt text-muted small"></i>
                                         </a>
                                     </td>
@@ -96,8 +113,8 @@
                     <div class="text-center p-5">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                         <h4 class="text-muted">No downloads yet</h4>
-                        <p class="text-muted">Start by downloading your first Instagram video!</p>
-                        <a href="{% url 'home' %}" class="btn btn-instagram text-white">
+                        <p class="text-muted">Start by downloading videos from Instagram, Facebook, TikTok, or Pinterest!</p>
+                        <a href="{% url 'home' %}" class="btn btn-primary text-white">
                             <i class="fas fa-download"></i> Start Downloading
                         </a>
                     </div>
