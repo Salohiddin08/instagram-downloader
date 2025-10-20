@@ -80,13 +80,43 @@ def get_platform_config(platform):
         'retries': 3,
         # Force IPv4 for PythonAnywhere compatibility
         'prefer_ipv4': True,
+        # Add geo-bypass for restricted content
+        'geo_bypass': True,
     }
+    
+    # Add proxy configuration for production environment
+    from django.conf import settings
+    if not settings.DEBUG and platform == 'instagram':
+        # Use proxy for Instagram in production to avoid IP blocking
+        proxy_list = [
+            # Free proxy servers (replace with premium ones for better reliability)
+            'http://proxy1.example.com:8080',
+            'http://proxy2.example.com:8080',
+            # Add more proxies as needed
+        ]
+        import random
+        if proxy_list:
+            base_config['proxy'] = random.choice(proxy_list)
     
     platform_configs = {
         'instagram': {
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1'
             },
+            # Add more options for Instagram
+            'sleep_interval': 1,
+            'max_sleep_interval': 3,
+            'extractor_args': {
+                'instagram': {
+                    'api_version': 'v1',
+                    'include_stories': False
+                }
+            }
         },
         'facebook': {
             'http_headers': {
@@ -402,8 +432,15 @@ def download_video(video_obj):
             # Provide user-friendly error messages
             if video_obj.platform == 'pinterest' and ('No video formats found' in str(last_error) or 'video formats' in str(last_error).lower()):
                 video_obj.error_message = 'Bu Pinterest post videosiz. Faqat video bor postlarni yuklab olish mumkin.'
-            elif video_obj.platform == 'instagram' and 'login' in str(last_error).lower():
-                video_obj.error_message = 'Bu Instagram post maxfiy yoki mavjud emas. Ochiq postlarni tanlang.'
+            elif video_obj.platform == 'instagram' and ('login' in str(last_error).lower() or 'private' in str(last_error).lower() or 'not available' in str(last_error).lower()):
+                # Try alternative Instagram extraction methods
+                try:
+                    alternative_success = _try_alternative_instagram_download(video_obj)
+                    if alternative_success:
+                        return video_obj
+                except Exception:
+                    pass
+                video_obj.error_message = 'Bu Instagram post maxfiy, mavjud emas yoki server tomonidan bloklangan. Ochiq postlarni tanlang yoki keyinroq urinib ko\'ring.'
             elif video_obj.platform == 'facebook' and ('login' in str(last_error).lower() or 'private' in str(last_error).lower()):
                 video_obj.error_message = 'Bu Facebook video maxfiy yoki mavjud emas. Ochiq videolarni tanlang.'
             elif video_obj.platform == 'tiktok' and 'video' in str(last_error).lower():
@@ -462,6 +499,78 @@ def get_available_formats(url):
             }
     except Exception as e:
         return {'error': str(e)}
+
+
+def _try_alternative_instagram_download(video_obj):
+    """
+    Try alternative methods to download Instagram content when main method fails
+    """
+    try:
+        import time
+        
+        # Wait a bit to avoid rate limiting
+        time.sleep(2)
+        
+        # Try with different user agents and configurations
+        alternative_configs = [
+            {
+                'http_headers': {
+                    'User-Agent': 'Instagram 219.0.0.12.117 Android',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                'extractor_args': {'instagram': {'variant': 'mobile'}}
+            },
+            {
+                'http_headers': {
+                    'User-Agent': 'Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.89 Mobile Safari/537.36'
+                },
+                'sleep_interval': 2,
+                'max_sleep_interval': 5
+            }
+        ]
+        
+        media_path = os.path.join(settings.MEDIA_ROOT, 'downloads', video_obj.platform)
+        os.makedirs(media_path, exist_ok=True)
+        
+        for config in alternative_configs:
+            try:
+                ydl_opts = {
+                    'outtmpl': os.path.join(media_path, '%(title)s.%(ext)s'),
+                    'format': 'best[height<=480]/worst',  # Use lower quality to avoid blocks
+                    'quiet': True,
+                    'no_warnings': True,
+                    'socket_timeout': 45,
+                    'retries': 5,
+                    **config
+                }
+                
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(video_obj.url, download=False)
+                    video_obj.title = info.get('title', 'Instagram Video')
+                    
+                    # Try to download
+                    ydl.download([video_obj.url])
+                    
+                    # Find the downloaded file
+                    expected_filename = ydl.prepare_filename(info)
+                    if os.path.exists(expected_filename):
+                        video_obj.filename = os.path.basename(expected_filename)
+                        video_obj.file_path = expected_filename
+                        video_obj.media_type = 'video'
+                        video_obj.status = 'completed'
+                        video_obj.completed_at = timezone.now()
+                        video_obj.save()
+                        return True
+                        
+                time.sleep(3)  # Wait between attempts
+                        
+            except Exception:
+                continue
+                
+        return False
+        
+    except Exception:
+        return False
 
 
 def get_video_info(url):

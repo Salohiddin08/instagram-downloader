@@ -9,3 +9,26 @@ INFO 2025-10-20 12:03:23,692 telegram_utils 21042 139767032434944 OTP created an
 INFO 2025-10-20 12:03:23,700 telegram_utils 21042 139767032434944 OTP verified successfully for phone number: +998338570052
 INFO 2025-10-20 12:04:12,658 autoreload 21269 139817565913344 Watching for file changes with StatReloader
 INFO 2025-10-20 12:04:23,259 basehttp 21269 139817417438912 "GET / HTTP/1.1" 301 0
+INFO 2025-10-20 12:06:40,363 autoreload 21269 139817565913344 /home/salohiddin/downlaoderf/instagram-downloader/downloader/views.py changed, reloading.
+INFO 2025-10-20 12:06:40,778 autoreload 22235 140404063080704 Watching for file changes with StatReloader
+INFO 2025-10-20 12:10:29,556 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getMe "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:29,668 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/deleteWebhook "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:29,669 _application 22460 140008904806656 Application started
+INFO 2025-10-20 12:10:30,367 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getUpdates "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:30,524 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:30,663 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:31,162 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:31,373 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:31,572 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:31,777 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:31,968 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:32,122 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:37,173 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getUpdates "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:37,600 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/sendMessage "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:47,341 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getUpdates "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:10:57,455 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getUpdates "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:11:07,569 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getUpdates "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:11:17,688 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getUpdates "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:11:28,098 _client 22460 140008904806656 HTTP Request: POST https://api.telegram.org/bot8276877025:AAFFPx5w397Zris6iSzFCe4cs6yrcwnnx0E/getUpdates "HTTP/1.1 200 OK"
+INFO 2025-10-20 12:11:28,099 _application 22460 140008904806656 Application is stopping. This might take a moment.
+INFO 2025-10-20 12:11:28,099 _application 22460 140008904806656 Application.stop() complete
