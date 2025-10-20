@@ -4,3 +4,8 @@ INFO 2025-10-20 11:56:31,898 telegram_utils 19989 140111962796288 OTP verified s
 INFO 2025-10-20 11:58:53,542 telegram_utils 20455 140385815290112 OTP sent successfully to Telegram ID: 1913322681
 INFO 2025-10-20 11:58:53,543 telegram_utils 20455 140385815290112 OTP created and sent for phone number: +998338570052
 INFO 2025-10-20 11:58:53,550 telegram_utils 20455 140385815290112 OTP verified successfully for phone number: +998338570052
+INFO 2025-10-20 12:03:23,689 telegram_utils 21042 139767032434944 OTP sent successfully to Telegram ID: 1913322681
+INFO 2025-10-20 12:03:23,692 telegram_utils 21042 139767032434944 OTP created and sent for phone number: +998338570052
+INFO 2025-10-20 12:03:23,700 telegram_utils 21042 139767032434944 OTP verified successfully for phone number: +998338570052
+INFO 2025-10-20 12:04:12,658 autoreload 21269 139817565913344 Watching for file changes with StatReloader
+INFO 2025-10-20 12:04:23,259 basehttp 21269 139817417438912 "GET / HTTP/1.1" 301 0
