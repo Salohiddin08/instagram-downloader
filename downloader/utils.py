@@ -75,6 +75,11 @@ def get_platform_config(platform):
         'no_warnings': True,
         'ignoreerrors': False,
         'extractaudio': False,
+        # Add timeout settings for production
+        'socket_timeout': 30,
+        'retries': 3,
+        # Force IPv4 for PythonAnywhere compatibility
+        'prefer_ipv4': True,
     }
     
     platform_configs = {

@@ -56,7 +56,7 @@ class SimpleWorkingBot:
                 f"🎉 Welcome back {user.first_name}!\n\n"
                 f"✅ Your phone: {phone}\n"
                 f"🔐 You can now download from Instagram, Facebook, TikTok, Pinterest!\n\n"
-                f"🌐 Visit: http://127.0.0.1:8001/telegram-login/",
+                f"🌐 Visit: https://smdownloader.pythonanywhere.com/telegram-login/",
                 reply_markup=ReplyKeyboardRemove()
             )
         except TelegramUser.DoesNotExist:
@@ -148,7 +148,7 @@ class SimpleWorkingBot:
             f"📞 Phone: {phone_number}\n"
             f"👤 Name: {user.first_name} {user.last_name or ''}\n\n"
             f"🎉 You can now login to Instagram Downloader!\n"
-            f"🌐 Visit: http://127.0.0.1:8001/telegram-login/\n"
+            f"🌐 Visit: https://smdownloader.pythonanywhere.com/telegram-login/\n"
             f"💡 Enter your phone number: {phone_number}",
             reply_markup=ReplyKeyboardRemove()
         )
@@ -170,7 +170,7 @@ class SimpleWorkingBot:
             "2️⃣ Telefon raqamingizni ulashing\n"
             "3️⃣ Istalgan video havolasini yuboring\n"
             "4️⃣ Bot videoni yuklab oladi va yuboradi!\n\n"
-            "🌐 Veb-sayt: http://127.0.0.1:8001/telegram-login/"
+            "🌐 Veb-sayt: https://smdownloader.pythonanywhere.com/telegram-login/"
         )
     
     async def handle_url(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

@@ -1,9 +1,7 @@
-import asyncio
 import logging
+import requests
 from django.conf import settings
 from django.utils import timezone
-from telegram import Bot
-from telegram.error import TelegramError
 from .models import TelegramOTP, TelegramUser
 from django.contrib.auth.models import User
 
@@ -15,47 +13,42 @@ class TelegramAuthService:
     
     def __init__(self):
         self.bot_token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
-        self.bot = None
-        if self.bot_token:
-            self.bot = Bot(token=self.bot_token)
     
-    async def send_otp_to_telegram(self, telegram_id, otp_code, phone_number=None):
-        """Send OTP code to user via Telegram bot"""
-        if not self.bot:
+    def send_otp_to_telegram(self, telegram_id, otp_code, phone_number=None):
+        """Send OTP code to user via Telegram bot using direct HTTP request"""
+        if not self.bot_token:
             logger.error("Telegram bot token not configured")
             return False
         
         try:
             message = f"🔐 Social Media Downloader uchun kirish kodingiz:\n\n" \
-                     f"**{otp_code}**\n\n" \
+                     f"<b>{otp_code}</b>\n\n" \
                      f"Bu kod 10 daqiqada muddati tugaydi.\n" \
                      f"Bu kodni hech kimga bermang!"
             
-            await self.bot.send_message(
-                chat_id=telegram_id,
-                text=message,
-                parse_mode='Markdown'
-            )
-            logger.info(f"OTP sent successfully to Telegram ID: {telegram_id}")
-            return True
+            url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
+            data = {
+                'chat_id': telegram_id,
+                'text': message,
+                'parse_mode': 'HTML'
+            }
             
-        except TelegramError as e:
+            response = requests.post(url, data=data, timeout=30)
+            
+            if response.status_code == 200:
+                logger.info(f"OTP sent successfully to Telegram ID: {telegram_id}")
+                return True
+            else:
+                logger.error(f"Failed to send OTP to Telegram ID {telegram_id}: HTTP {response.status_code}")
+                return False
+            
+        except requests.RequestException as e:
             logger.error(f"Failed to send OTP to Telegram ID {telegram_id}: {e}")
             return False
         except Exception as e:
             logger.error(f"Unexpected error sending OTP: {e}")
             return False
     
-    def send_otp_sync(self, telegram_id, otp_code, phone_number=None):
-        """Synchronous wrapper for sending OTP"""
-        try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            return loop.run_until_complete(
-                self.send_otp_to_telegram(telegram_id, otp_code, phone_number)
-            )
-        finally:
-            loop.close()
     
     def create_otp_for_phone_number(self, phone_number):
         """Create a new OTP for the given phone number"""
@@ -87,7 +80,7 @@ class TelegramAuthService:
             )
             
             # Send OTP via Telegram
-            success = self.send_otp_sync(telegram_id, otp.otp_code, phone_number)
+            success = self.send_otp_to_telegram(telegram_id, otp.otp_code, phone_number)
             
             if success:
                 logger.info(f"OTP created and sent for phone number: {phone_number}")
@@ -181,21 +174,33 @@ class TelegramAuthService:
             logger.error(f"Error creating user from phone data: {e}")
             return None, "Error creating user account"
     
-    async def get_telegram_user_info(self, telegram_id):
-        """Get user information from Telegram API"""
-        if not self.bot:
+    def get_telegram_user_info(self, telegram_id):
+        """Get user information from Telegram API using direct HTTP request"""
+        if not self.bot_token:
             return None
         
         try:
-            user = await self.bot.get_chat(chat_id=telegram_id)
-            return {
-                'id': user.id,
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'type': user.type
-            }
-        except TelegramError as e:
+            url = f"https://api.telegram.org/bot{self.bot_token}/getChat"
+            data = {'chat_id': telegram_id}
+            
+            response = requests.post(url, data=data, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('ok'):
+                    user = result.get('result', {})
+                    return {
+                        'id': user.get('id'),
+                        'username': user.get('username'),
+                        'first_name': user.get('first_name'),
+                        'last_name': user.get('last_name'),
+                        'type': user.get('type')
+                    }
+            
+            logger.error(f"Failed to get Telegram user info for ID {telegram_id}: HTTP {response.status_code}")
+            return None
+            
+        except requests.RequestException as e:
             logger.error(f"Failed to get Telegram user info for ID {telegram_id}: {e}")
             return None
 
