@@ -35,6 +35,31 @@ PLATFORM_PATTERNS = {
 }
 
 
+def _get_random_instagram_headers():
+    """
+    Get random headers for Instagram to avoid detection
+    """
+    import random
+    
+    user_agents = [
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
+        'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Mobile Safari/537.36',
+        'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15'
+    ]
+    
+    return {
+        'User-Agent': random.choice(user_agents),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+    }
+
+
 def detect_platform(url):
     """
     Detect the platform from URL
@@ -84,30 +109,21 @@ def get_platform_config(platform):
         'geo_bypass': True,
     }
     
-    # Add proxy configuration for production environment
-    from django.conf import settings
-    if not settings.DEBUG and platform == 'instagram':
-        # Use proxy for Instagram in production to avoid IP blocking
-        proxy_list = [
-            # Free proxy servers (replace with premium ones for better reliability)
-            'http://proxy1.example.com:8080',
-            'http://proxy2.example.com:8080',
-            # Add more proxies as needed
-        ]
-        import random
-        if proxy_list:
-            base_config['proxy'] = random.choice(proxy_list)
+    # Add proxy configuration for production environment (disabled for now)
+    # from django.conf import settings
+    # if not settings.DEBUG and platform == 'instagram':
+    #     # Use real proxy servers here when available
+    #     proxy_list = [
+    #         # 'http://real-proxy1.com:8080',
+    #         # 'http://real-proxy2.com:8080',
+    #     ]
+    #     import random
+    #     if proxy_list:
+    #         base_config['proxy'] = random.choice(proxy_list)
     
     platform_configs = {
         'instagram': {
-            'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1'
-            },
+            'http_headers': _get_random_instagram_headers(),
             # Add more options for Instagram
             'sleep_interval': 1,
             'max_sleep_interval': 3,
