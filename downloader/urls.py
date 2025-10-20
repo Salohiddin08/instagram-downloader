@@ -15,6 +15,7 @@ urlpatterns = [
     # Telegram Authentication URLs
     path('telegram-login/', views.telegram_login, name='telegram_login'),
     path('telegram-verify-otp/', views.telegram_verify_otp, name='telegram_verify_otp'),
+    path('telegram-verify-direct/', views.telegram_verify_direct, name='telegram_verify_direct'),
     path('telegram-resend-otp/', views.telegram_resend_otp, name='telegram_resend_otp'),
     path('telegram-link/', views.telegram_link_account, name='telegram_link_account'),
     path('telegram-verify-link/', views.telegram_verify_link, name='telegram_verify_link'),

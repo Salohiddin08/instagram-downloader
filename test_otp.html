@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OTP Test</title>
+</head>
+<body>
+    <h2>Direct OTP Test</h2>
+    <form method="post" action="/telegram/verify-otp/">
+        {% csrf_token %}
+        <p>
+            <label>OTP Code:</label>
+            <input type="text" name="otp_code" required>
+        </p>
+        <button type="submit">Verify</button>
+    </form>
+    
+    <p><strong>Use code: 280820</strong> (from our test)</p>
+</body>
+</html>

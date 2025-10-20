@@ -209,13 +209,27 @@ def telegram_verify_otp(request):
     
     if request.method == 'POST':
         otp_code = request.POST.get('otp_code', '').strip()
+        logger.info(f"OTP verification POST - Code: {otp_code}, Phone: {phone_number}")
         
         if not otp_code:
+            logger.warning("Empty OTP code provided")
             messages.error(request, 'Iltimos, OTP kodini kiriting')
             return render(request, 'registration/telegram_verify_otp.html', {'phone_number': phone_number})
         
+        # Debug: Check if OTP exists in database
+        otp_records = TelegramOTP.objects.filter(
+            phone_number=phone_number,
+            otp_code=otp_code
+        ).order_by('-created_at')
+        logger.info(f"Found {otp_records.count()} OTP records for phone {phone_number} and code {otp_code}")
+        
+        for i, otp_record in enumerate(otp_records[:3]):
+            logger.info(f"  OTP {i+1}: Used={otp_record.is_used}, Expired={otp_record.is_expired()}, Valid={otp_record.is_valid()}")
+        
         # Verify OTP
+        logger.info(f"Calling verify_otp with phone: {phone_number}, code: {otp_code}")
         is_valid, message = telegram_service.verify_otp(phone_number, otp_code)
+        logger.info(f"OTP verification result: valid={is_valid}, message={message}")
         
         if is_valid:
             # OTP is valid, now get or create user account
@@ -240,6 +254,50 @@ def telegram_verify_otp(request):
     
     return render(request, 'registration/telegram_verify_otp.html', {'phone_number': phone_number})
 
+
+def telegram_verify_direct(request):
+    """Direct OTP verification without session dependency"""
+    if request.method == 'POST':
+        otp_code = request.POST.get('otp_code', '').strip()
+        
+        if not otp_code:
+            messages.error(request, 'Iltimos, OTP kodini kiriting')
+            return render(request, 'registration/telegram_verify_direct.html')
+        
+        # Find the most recent valid OTP with this code
+        otp_record = TelegramOTP.objects.filter(
+            otp_code=otp_code,
+            is_used=False,
+            expires_at__gt=timezone.now()
+        ).order_by('-created_at').first()
+        
+        if not otp_record:
+            messages.error(request, 'Noto\'g\'ri yoki muddati tugagan kod')
+            return render(request, 'registration/telegram_verify_direct.html')
+        
+        phone_number = otp_record.phone_number
+        
+        # Verify OTP
+        is_valid, message = telegram_service.verify_otp(phone_number, otp_code)
+        
+        if is_valid:
+            # Get or create user account
+            user, user_message = telegram_service.get_or_create_user_from_phone(phone_number)
+            
+            if user:
+                # Log the user in
+                from django.contrib.auth import login as auth_login
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                
+                messages.success(request, f'Telegram orqali muvaffaqiyatli kirildi!')
+                return redirect('home')
+            else:
+                messages.error(request, f'Foydalanuvchi hisobi yaratishda xatolik: {user_message}')
+        else:
+            messages.error(request, message)
+    
+    return render(request, 'registration/telegram_verify_direct.html')
 
 def telegram_resend_otp(request):
     """Resend OTP code to Telegram"""
