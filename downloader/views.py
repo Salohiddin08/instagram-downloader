@@ -10,11 +10,15 @@ from django.views.generic import ListView, CreateView
 from django.urls import reverse_lazy
 import os
 import threading
+import logging
+from django.utils import timezone
 
 from .models import DownloadedVideo, TelegramOTP, TelegramUser
 from .forms import VideoDownloadForm, CustomUserCreationForm
 from .utils import download_video, get_video_info, detect_platform
 from .telegram_utils import telegram_service
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -163,6 +167,8 @@ def telegram_login(request):
         if otp:
             # Store phone_number in session for OTP verification
             request.session['phone_number'] = phone_number
+            request.session.save()  # Explicitly save session
+            logger.info(f"Phone number stored in session: {phone_number}")
             messages.success(request, 'OTP kodi Telegram akkauntingizga yuborildi!')
             return redirect('telegram_verify_otp')
         else:
@@ -175,8 +181,30 @@ def telegram_verify_otp(request):
     """Verify OTP and complete Telegram login"""
     phone_number = request.session.get('phone_number')
     
+    # Debug logging
+    logger.info(f"OTP verification attempt - Phone in session: {bool(phone_number)}")
+    if phone_number:
+        logger.info(f"Phone number from session: {phone_number}")
+    
+    # If no phone number in session, try to get from POST for direct verification
+    if not phone_number and request.method == 'POST':
+        # Allow direct verification by checking recent OTPs
+        otp_code = request.POST.get('otp_code', '').strip()
+        if otp_code:
+            # Find recent valid OTP
+            recent_otp = TelegramOTP.objects.filter(
+                otp_code=otp_code,
+                is_used=False,
+                expires_at__gt=timezone.now()
+            ).order_by('-created_at').first()
+            
+            if recent_otp:
+                phone_number = recent_otp.phone_number
+                logger.info(f"Found phone number {phone_number} from OTP code")
+    
     if not phone_number:
-        messages.error(request, 'Iltimos, kirish jarayonini qaytadan boshlang')
+        logger.warning("Phone number not found in session during OTP verification")
+        messages.error(request, 'Sessiya tugagan yoki noto\'g\'ri kod. Iltimos, kirish jarayonini qaytadan boshlang')
         return redirect('telegram_login')
     
     if request.method == 'POST':
