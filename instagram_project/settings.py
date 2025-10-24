@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-u!rk*+@5r_^^2ztglju5^6&2npd!ez!nl4)(+nksug-291d1ed'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = [
     'smdownloader.pythonanywhere.com',
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'django_extensions',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -224,6 +225,9 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+else:
+    # Explicitly disable SSL redirects in development
+    SECURE_SSL_REDIRECT = False
 
 # Session configuration
 SESSION_COOKIE_AGE = 1800  # 30 minutes

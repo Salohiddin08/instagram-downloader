@@ -18,7 +18,9 @@ PLATFORM_PATTERNS = {
     'facebook': [
         r'(?:https?://)?(?:www\.|m\.)?facebook\.com/.*/videos?/([0-9]+)/?',
         r'(?:https?://)?(?:www\.|m\.)?facebook\.com/watch/\?v=([0-9]+)',
-        r'(?:https?://)?fb\.watch/([A-Za-z0-9_-]+)/?'
+        r'(?:https?://)?fb\.watch/([A-Za-z0-9_-]+)/?',
+        r'(?:https?://)?(?:www\.|m\.)?facebook\.com/share/r/([A-Za-z0-9_-]+)/?',
+        r'(?:https?://)?(?:www\.|m\.)?facebook\.com/share/v/([A-Za-z0-9_-]+)/?'
     ],
     'tiktok': [
         r'(?:https?://)?(?:www\.|vm\.|m\.)?tiktok\.com/@[^/]+/video/([0-9]+)/?',
@@ -38,25 +40,42 @@ PLATFORM_PATTERNS = {
 def _get_random_instagram_headers():
     """
     Get random headers for Instagram to avoid detection
+    Enhanced for hosting environments
     """
     import random
     
+    # Updated and expanded user agents for better compatibility
     user_agents = [
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1',
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
-        'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Mobile Safari/537.36',
-        'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15'
+        # Mobile agents (less likely to be blocked)
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Mozilla/5.0 (Linux; Android 12; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36',
+        'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Mobile Safari/537.36',
+        'Mozilla/5.0 (Linux; Android 11; SM-A515F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+        # Desktop agents for fallback
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+        # Instagram app user agents
+        'Instagram 302.0.0.23.109 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; qcom; en_US; 511558019)',
+        'Instagram 300.1.0.23.111 Android (31/12; 440dpi; 1080x2340; xiaomi; M2102J20SG; alioth; qcom; en_US; 507075138)'
     ]
     
+    # More comprehensive headers
     return {
         'User-Agent': random.choice(user_agents),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,uz;q=0.8,ru;q=0.7',
+        'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0',
+        'sec-ch-ua': '"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"',
+        'sec-ch-ua-mobile': random.choice(['?0', '?1']),
+        'sec-ch-ua-platform': random.choice(['"Windows"', '"macOS"', '"Linux"', '"Android"'])
     }
 
 
@@ -92,7 +111,14 @@ def validate_url(url, platform=None):
 def get_platform_config(platform):
     """
     Get platform-specific yt-dlp configuration
+    Enhanced for hosting environments with better error handling
     """
+    from django.conf import settings
+    import random
+    
+    # Determine if we're in production (hosting)
+    is_production = not getattr(settings, 'DEBUG', True)
+    
     base_config = {
         'writeinfojson': False,
         'writesubtitles': False,
@@ -100,13 +126,26 @@ def get_platform_config(platform):
         'no_warnings': True,
         'ignoreerrors': False,
         'extractaudio': False,
-        # Add timeout settings for production
-        'socket_timeout': 30,
-        'retries': 3,
-        # Force IPv4 for PythonAnywhere compatibility
+        # Enhanced timeout settings for hosting
+        'socket_timeout': 60 if is_production else 30,
+        'retries': 5 if is_production else 3,
+        # Force IPv4 for hosting compatibility (especially PythonAnywhere)
         'prefer_ipv4': True,
         # Add geo-bypass for restricted content
         'geo_bypass': True,
+        'geo_bypass_country': 'US',
+        # Add rate limiting to avoid blocks
+        'sleep_interval': 2 if is_production else 1,
+        'max_sleep_interval': 5 if is_production else 3,
+        # Enable verbose logging for debugging on hosting
+        'verbose': False,  # Keep false to avoid log spam
+        # Add fragment retries for unstable connections
+        'fragment_retries': 10,
+        'skip_unavailable_fragments': True,
+        # Add more robust error handling
+        'continuedl': True,
+        # Force TLS version for better compatibility
+        'http_chunk_size': 10485760 if is_production else None,  # 10MB chunks for hosting
     }
     
     # Add proxy configuration for production environment (disabled for now)
@@ -124,15 +163,26 @@ def get_platform_config(platform):
     platform_configs = {
         'instagram': {
             'http_headers': _get_random_instagram_headers(),
-            # Add more options for Instagram
-            'sleep_interval': 1,
-            'max_sleep_interval': 3,
+            # Enhanced Instagram options for hosting
+            'sleep_interval': 3 if is_production else 1,
+            'max_sleep_interval': 8 if is_production else 3,
             'extractor_args': {
                 'instagram': {
                     'api_version': 'v1',
-                    'include_stories': False
+                    'include_stories': False,
+                    'variant': 'mobile' if is_production else 'web',
+                    'comment_count': 0,  # Disable comments to reduce load
+                    'like_count': 0      # Disable likes to reduce load
                 }
-            }
+            },
+            # Add cookies handling for better authentication
+            'cookiefile': None,  # Don't use cookies to avoid issues
+            # Additional Instagram-specific headers
+            'http_headers': {
+                **_get_random_instagram_headers(),
+                'X-Instagram-AJAX': '1',
+                'X-Requested-With': 'XMLHttpRequest'
+            } if is_production else _get_random_instagram_headers(),
         },
         'facebook': {
             'http_headers': {
@@ -449,7 +499,16 @@ def download_video(video_obj):
             if video_obj.platform == 'pinterest' and ('No video formats found' in str(last_error) or 'video formats' in str(last_error).lower()):
                 video_obj.error_message = 'Bu Pinterest post videosiz. Faqat video bor postlarni yuklab olish mumkin.'
             elif video_obj.platform == 'instagram' and ('login' in str(last_error).lower() or 'private' in str(last_error).lower() or 'not available' in str(last_error).lower()):
-                # Try alternative Instagram extraction methods
+                # Try bypass methods specifically designed for hosting
+                try:
+                    from .instagram_bypass import download_instagram_content_bypass
+                    bypass_success, bypass_message = download_instagram_content_bypass(video_obj)
+                    if bypass_success:
+                        return video_obj
+                except ImportError:
+                    pass
+                    
+                # Try alternative Instagram extraction methods as fallback
                 try:
                     alternative_success = _try_alternative_instagram_download(video_obj)
                     if alternative_success:
@@ -519,73 +578,136 @@ def get_available_formats(url):
 
 def _try_alternative_instagram_download(video_obj):
     """
-    Try alternative methods to download Instagram content when main method fails
+    Try multiple alternative methods to download Instagram content when main method fails
+    Enhanced for hosting environments with multiple fallback strategies
     """
+    import time
+    import random
+    from django.conf import settings
+    
     try:
-        import time
-        
-        # Wait a bit to avoid rate limiting
-        time.sleep(2)
-        
-        # Try with different user agents and configurations
-        alternative_configs = [
-            {
-                'http_headers': {
-                    'User-Agent': 'Instagram 219.0.0.12.117 Android',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                'extractor_args': {'instagram': {'variant': 'mobile'}}
-            },
-            {
-                'http_headers': {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.89 Mobile Safari/537.36'
-                },
-                'sleep_interval': 2,
-                'max_sleep_interval': 5
-            }
-        ]
+        # Wait to avoid rate limiting
+        time.sleep(random.uniform(2, 5))
         
         media_path = os.path.join(settings.MEDIA_ROOT, 'downloads', video_obj.platform)
         os.makedirs(media_path, exist_ok=True)
         
-        for config in alternative_configs:
+        # Strategy 1: Try with Instagram mobile app user agents
+        mobile_configs = [
+            {
+                'http_headers': {
+                    'User-Agent': 'Instagram 302.0.0.23.109 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; qcom; en_US; 511558019)',
+                    'X-Instagram-AJAX': '1',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': '*/*',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                },
+                'extractor_args': {'instagram': {'variant': 'mobile', 'api_version': 'v1'}},
+                'format': 'worst[height<=360]/worst'  # Very low quality for hosting
+            },
+            {
+                'http_headers': {
+                    'User-Agent': 'Mozilla/5.0 (Linux; Android 12; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Referer': 'https://www.instagram.com/'
+                },
+                'format': 'best[height<=480]/worst'
+            }
+        ]
+        
+        # Strategy 2: Try with different format selectors
+        format_strategies = [
+            'worst[ext=mp4]',
+            'worst',
+            'best[height<=240]',
+            'best[height<=360]',
+            'best[filesize<=10M]'
+        ]
+        
+        # Try each mobile config
+        for i, config in enumerate(mobile_configs):
             try:
-                ydl_opts = {
+                base_opts = {
                     'outtmpl': os.path.join(media_path, '%(title)s.%(ext)s'),
-                    'format': 'best[height<=480]/worst',  # Use lower quality to avoid blocks
                     'quiet': True,
                     'no_warnings': True,
-                    'socket_timeout': 45,
-                    'retries': 5,
+                    'socket_timeout': 90,  # Longer timeout for hosting
+                    'retries': 8,
+                    'fragment_retries': 15,
+                    'skip_unavailable_fragments': True,
+                    'geo_bypass': True,
+                    'geo_bypass_country': 'US',
+                    'prefer_ipv4': True,
+                    'sleep_interval': 4,
+                    'max_sleep_interval': 8,
                     **config
                 }
                 
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(video_obj.url, download=False)
-                    video_obj.title = info.get('title', 'Instagram Video')
-                    
-                    # Try to download
-                    ydl.download([video_obj.url])
-                    
-                    # Find the downloaded file
-                    expected_filename = ydl.prepare_filename(info)
-                    if os.path.exists(expected_filename):
-                        video_obj.filename = os.path.basename(expected_filename)
-                        video_obj.file_path = expected_filename
-                        video_obj.media_type = 'video'
-                        video_obj.status = 'completed'
-                        video_obj.completed_at = timezone.now()
-                        video_obj.save()
-                        return True
+                # Try different formats with this config
+                for format_sel in format_strategies[:2]:  # Limit attempts
+                    try:
+                        ydl_opts = {**base_opts, 'format': format_sel}
                         
-                time.sleep(3)  # Wait between attempts
+                        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                            info = ydl.extract_info(video_obj.url, download=False)
+                            video_obj.title = info.get('title', 'Instagram Video')
+                            
+                            # Try to download
+                            ydl.download([video_obj.url])
+                            
+                            # Find the downloaded file
+                            expected_filename = ydl.prepare_filename(info)
+                            if os.path.exists(expected_filename):
+                                video_obj.filename = os.path.basename(expected_filename)
+                                video_obj.file_path = expected_filename
+                                video_obj.media_type = 'video'
+                                video_obj.status = 'completed'
+                                video_obj.completed_at = timezone.now()
+                                video_obj.save()
+                                return True
+                                
+                        # Wait between format attempts
+                        time.sleep(random.uniform(3, 6))
                         
-            except Exception:
+                    except Exception as e:
+                        continue
+                
+                # Wait between config attempts
+                time.sleep(random.uniform(5, 8))
+                
+            except Exception as e:
                 continue
+        
+        # Strategy 3: Try image extraction if video fails
+        try:
+            info_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'http_headers': _get_random_instagram_headers(),
+                'socket_timeout': 60,
+                'prefer_ipv4': True,
+                'geo_bypass': True
+            }
+            
+            with yt_dlp.YoutubeDL(info_opts) as ydl:
+                info = ydl.extract_info(video_obj.url, download=False)
+                
+                # Look for thumbnails/images
+                thumbnails = info.get('thumbnails', [])
+                if thumbnails:
+                    # Get the best quality thumbnail
+                    best_thumb = max(thumbnails, key=lambda x: x.get('width', 0) * x.get('height', 0))
+                    if best_thumb.get('url'):
+                        success = download_image_from_url(video_obj, best_thumb['url'], info.get('title', 'Instagram Image'))
+                        if success:
+                            return True
+        except Exception:
+            pass
                 
         return False
         
-    except Exception:
+    except Exception as e:
         return False
 
 
